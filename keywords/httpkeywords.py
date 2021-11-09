@@ -4,6 +4,9 @@ import requests
 import json
 
 
+from common import logger
+
+
 # 创建已http接口请求关键字类
 class HTTP:
 
@@ -31,10 +34,10 @@ class HTTP:
 
 		if url.startswith("http"):
 			self.baseurl =url
-			print("baseurl: ",self.baseurl)
+			# print("baseurl: ",self.baseurl)
 			self.writer.write(self.writer.row, self.writer.clo, "PASS")
 		else:
-			print("error: utl地址不合法")
+			logger.error("error: utl地址不合法")
 			self.writer.write(self.writer.row, self.writer.clo, "FAIL")
 			self.writer.write(self.writer.row, self.writer.clo+1, "error: utl地址不合法")
 
@@ -48,8 +51,8 @@ class HTTP:
 		try:
 			if not path.startswith('http'):
 				path = self.baseurl + '/' + path
-				print("self.url:",self.baseurl)
-				print(path)
+				# print("self.url:",self.baseurl)
+				# print(path)
 			# 如果需要传参数，就调用post，传递data
 			if data is None or data == "":
 				res = self.session.post(path)
@@ -67,6 +70,7 @@ class HTTP:
 		except Exception as e:
 			self.writer.write(self.writer.row, self.writer.clo, "FAIL")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(self.json_res))
+			logger.exception(e)
 
 	# 定义断言相等的关键字，用来判断接送的可以对应的值和期望值相等
 	def assertequals(self, key, value):
@@ -79,15 +83,15 @@ class HTTP:
 		try:
 			res = str(self.json_res[key])
 		except Exception as e:
-			print(e)
+			logger.logger.exception(e)
 		if res == str(value):
 			self.writer.write(self.writer.row, self.writer.clo, "PASS")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(res))
-			print("PASS")
+			logger.logger.info("PASS")
 		else:
 			self.writer.write(self.writer.row, self.writer.clo, "FAIL")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(res))
-			print("FAIL")
+			logger.logger.info("FAIL")
 
 	# 给头添加一个键值对关键字
 	def addheader(self, key, value):
@@ -103,13 +107,14 @@ class HTTP:
 		self.writer.write(self.writer.row, self.writer.clo, "PASS")
 		self.writer.write(self.writer.row, self.writer.clo + 1, str(value))
 
-	def removeheader(self):
+	def removeheader(self, key):
 		"""
-		清除请求头中的数据
+		从表头里面删除一个键值对
 		:return:
 		"""
-		self.session.headers.clear()
+		self.session.headers.pop(key)
 		self.writer.write(self.writer.row, self.writer.clo, "PASS")
+		self.writer.write(self.writer.row, self.writer.clo + 1, str(key))
 
 
 	def savejson(self, p, key):
@@ -123,12 +128,12 @@ class HTTP:
 		try:
 			res = self.json_res[key]
 		except Exception as e:
-			print(e)
+			logger.logger.exception(e)
 		self.params[p] = res
 		self.writer.write(self.writer.row, self.writer.clo, "PASS")
 		self.writer.write(self.writer.row, self.writer.clo + 1, str(res))
 
-		print("savejson: ", self.params)
+		# print("savejson: ", self.params)
 
 
 	def __getparams(self, data):
@@ -141,7 +146,7 @@ class HTTP:
 			# print(self.params)
 			data = data.replace('{' + key + '}', self.params[key])
 			# print("self.params[key]: " ,self.params[key])
-			print("__getparams:", data)
+			# print("__getparams:", data)
 		return data
 
 
@@ -152,16 +157,16 @@ class HTTP:
 		:return:
 		"""
 		# 分割参数个数
-		print("data: ", data)
+		# print("data: ", data)
 		httpparam = {}
 		param = data.split("&")
 		print("param: ", param)
 		for item in param:
-			print("item: ", item)
+			# print("item: ", item)
 			p = item.split("=")
 			if len(p) > 1:
 				httpparam[p[0]] = p[1]
 			else:
 				httpparam[p[0]] = ""
-		print("httpparam: ", httpparam)
+		# print("httpparam: ", httpparam)
 		return httpparam

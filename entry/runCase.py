@@ -8,6 +8,11 @@ import inspect
 from keywords.httpkeywords import HTTP
 from common.Excel import Reader
 from common.Excel import Writer
+from common import logger
+from common import config
+from common.excelresult import Res
+from common.mysql import Mysql
+from common.mail import Mail
 
 
 # 反射获取关键字
@@ -16,7 +21,7 @@ def getfunc(obj,line):
 	try:
 		func = getattr(obj, line[3])
 	except Exception as e:
-		print(e)
+		logger.logger.exception(e)
 
 	return func
 
@@ -51,7 +56,7 @@ def run(func, lenargs, line):
 	if lenargs < 4:
 		func(line[4], line[5], line[4])
 		return
-	print("error: 目前只支持3个参数的关键字")
+	logger.logger.error("error: 目前只支持3个参数的关键字")
 
 
 # 运行用例
@@ -82,5 +87,25 @@ def runCase():
 
 	writer.save_close()
 
-
-runCase()
+if __name__ == "__main__":
+	config.get_config("../lib/conf/conf.txt")
+	logger.info(config.config)
+	# 初始化数据库，如果非必要可以不用执行
+	# mysql = Mysql()
+	# mysql.init_mysql("C:\\Users\\007\\Desktop\\huobi\\userinfo.sql")
+	runCase()
+	res = Res()
+	r = res.get_res("../lib/results/results-HTTP接口用例.xls")
+	text = config.config['mailtext']
+	mailtitle = config.config["mailtitle"]
+	if r["status"] == "PASS":
+		text = text.replace("status",r['status'])
+	else:
+		text = text.replace('<font style="font-weight: bold;font-size: 14px;color: #00d800;">status</font>','<font style="font-weight: bold;font-size: 14px;color: red;">Fail</font>')
+	text = text.replace("passrate", r["passrate"] + "%")
+	text = text.replace("casecount", r["casecount"])
+	text = text.replace("title", mailtitle)
+	print(text)
+	# logger.info(text)
+	# mail = Mail()
+	# mail.send(text)
