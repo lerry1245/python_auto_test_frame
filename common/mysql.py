@@ -20,7 +20,7 @@ class Mysql:
             try:
                 self.mysql_config[key] = config.config[key]
             except Exception as e:
-                pass
+                logger.info(e)
         # 把端口处理为整数
         try:
             self.mysql_config['port'] = int(self.mysql_config['port'])
@@ -59,7 +59,7 @@ class Mysql:
             port=self.mysql_config['port'],
             host=self.mysql_config['host'],
             database=self.mysql_config['database'],
-            # charset=self.mysql_config['mysqlcharset']
+            charset=self.mysql_config['mysqlcharset']
         )
 
         # 获取游标
@@ -75,8 +75,9 @@ class Mysql:
 
 
 # 调试代码
-config.get_config('../lib/conf/conf.txt')
-logger.info(config.config)
+if __name__ == "__main__":
+    config.get_config('../lib/conf/conf.txt')
+    logger.info(config.config)
 
-mysql = Mysql()
-mysql.init_mysql('C:\\Users\\007\\Desktop\\huobi\\userinfo.sql')
+    mysql = Mysql()
+    mysql.init_mysql('C:\\Users\\007\\Desktop\\huobi\\userinfo.sql')

@@ -8,8 +8,7 @@ config = {}
 
 def get_config(path):
     """
-    powered by Mr Will
-               at 2018-12-22
+    powered by
             用来格式化打印日志到文件和控制台
     :param path:配置文件路径
     :return:返回配置文件dict
@@ -24,6 +23,7 @@ def get_config(path):
         # 跳过注释
         if s.startswith('#'):
             continue
+        # 开始字符不是等号的
         if not s.find('=') >0:
             logger.warn("配置文件格式错误，请检查：" + str(s))
 

@@ -2,6 +2,7 @@
 
 import requests
 import json
+import jsonpath
 
 
 from common import logger
@@ -12,7 +13,7 @@ class HTTP:
 
 
 	# 构造函数，实例化实例变量
-	def __init__(self, writer):
+	def __init__(self,writer):
 		# 创建session对象，模拟浏览器的cookie管理
 		self.session = requests.session()
 		# 存放json解析后的结果
@@ -55,16 +56,22 @@ class HTTP:
 				# print(path)
 			# 如果需要传参数，就调用post，传递data
 			if data is None or data == "":
-				res = self.session.post(path)
+				result = self.session.post(path)
 			else:
 				# 替换参数
 				data = self.__getparams(data)
 				# 替换后的参数转换为字典
 				data = self.__todict(data)
-				res = self.session.post(path, data=data)
-			print(res.text)
-
-			self.json_res = json.loads(res.text)
+				result = self.session.post(path, data=data)
+			print(result.text)
+			res = result.text
+			try:
+				res = res[res.find('{'): res.rfind('}')+ 1]
+				print(res)
+			except Exception as e:
+				logger.exception(e)
+			self.json_res = json.loads(res)
+			print(self.json_res)
 			self.writer.write(self.writer.row, self.writer.clo, "PASS")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(self.json_res))
 		except Exception as e:
@@ -73,25 +80,25 @@ class HTTP:
 			logger.exception(e)
 
 	# 定义断言相等的关键字，用来判断接送的可以对应的值和期望值相等
-	def assertequals(self, key, value):
+	def assertequals(self, jsonpaths, value):
 		"""
 		:param key: 需要断言self.json_res的key值
 		:param value: 断言的预期结果值
 		:return:
 		"""
-		res = ''
+		res = 'None'
 		try:
-			res = str(self.json_res[key])
+			res = str(jsonpath.jsonpath(self.json_res, jsonpaths)[0])
 		except Exception as e:
-			logger.logger.exception(e)
+			logger.exception(e)
 		if res == str(value):
 			self.writer.write(self.writer.row, self.writer.clo, "PASS")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(res))
-			logger.logger.info("PASS")
+			logger.info("PASS")
 		else:
 			self.writer.write(self.writer.row, self.writer.clo, "FAIL")
 			self.writer.write(self.writer.row, self.writer.clo + 1, str(res))
-			logger.logger.info("FAIL")
+			logger.info("FAIL")
 
 	# 给头添加一个键值对关键字
 	def addheader(self, key, value):
@@ -128,7 +135,7 @@ class HTTP:
 		try:
 			res = self.json_res[key]
 		except Exception as e:
-			logger.logger.exception(e)
+			logger.exception(e)
 		self.params[p] = res
 		self.writer.write(self.writer.row, self.writer.clo, "PASS")
 		self.writer.write(self.writer.row, self.writer.clo + 1, str(res))

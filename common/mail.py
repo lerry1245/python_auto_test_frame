@@ -7,17 +7,19 @@ from common import config,logger
 
 class Mail:
     """
-        powered by Mr Will
-        at 2018-12-22
+        powered by Mr lerry
+        at 2021-11-12
         用来获取配置并发送邮件
     """
     def __init__(self):
+        # 把mail配置信息存放在列表
         self.mail_info = {}
 
         self.mail_info['from'] = config.config['mail']
         self.mail_info['username'] = config.config['mail']
         self.mail_info['hostname'] = 'smtp.' + config.config['mail'][
-                                               config.config['mail'].rfind('@') + 1:config.config['mail'].__len__()]
+                                               config.config['mail'].rfind('@') + 1:config.config['mail'].__len__()]   #用获取的mail下标获取邮箱后缀名
+        # 第三方客户端邮箱登录需要填写SMTP的授权码登录
         self.mail_info['password'] = config.config['pwd']
 
         # 接收人
@@ -45,8 +47,8 @@ class Mail:
         msg['Subject'] = Header(self.mail_info['mail_subject'], self.mail_info['mail_encoding'])
         msg['from'] = self.mail_info['from']
 
-        print(self.mail_info)
-        print(text)
+        logger.info(self.mail_info)
+        # print(text)
         msg['to'] = ','.join(self.mail_info['to'])
         msg['cc'] = ','.join(self.mail_info['cc'])
         receive = self.mail_info['to']

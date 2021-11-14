@@ -3,8 +3,8 @@
 
 class Txt:
     """
-        powered by Mr Will
-           at 2018-12-21
+        powered by Mr lerry
+           at 2021-11-10
         用来读写文件
     """
 
@@ -27,11 +27,12 @@ class Txt:
                 # 处理非法字符
                 self.data[i] = self.data[i].encode('utf-8').decode('UTF-8-sig')
                 self.data[i] = self.data[i].replace('\n', '')
+                # print(self.data[i])
 
             return
 
         if t == 'w':
-            # 打开可读文件
+            # 打开可读文件, a 文件尾部追加，文件不存在穿件在写
             self.f = open(path, 'a', encoding=coding)
             return
 
